@@ -1,0 +1,4 @@
+node-goldvault
+==============
+
+In dev.
