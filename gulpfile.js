@@ -9,10 +9,9 @@ var betterConsole = require('better-console');
 var jsdoc = require('gulp-jsdoc');
 var jsPaths = ['*.js', 'lib/**/*.js', 'test/**/*.js', 'migrations/**/*.js'];
 
-var test = function (cb) {
+var test = function () {
   return gulp.src(['test/*.js'])
-        .pipe(lab('-v -c'))
-        .on('end', cb);
+        .pipe(lab('-v -c'));
 };
 
 var lint = function () {
@@ -30,12 +29,10 @@ gulp.task('default', ['lint', 'test']);
 gulp.task('ci', ['lint', 'test', 'coveralls']);
 
 gulp.task('watch', function () {
-  gulp.watch(jsPaths, batch(function (events, cb) {
+  gulp.watch(jsPaths, batch(function () {
     clear();
     lint();
-    test(function () {
-      cb();
-    });
+    test();
   }));
 });
 
@@ -43,10 +40,8 @@ gulp.task('lint', function () {
   lint();
 });
 
-gulp.task('test', function (cb) {
-  test(function () {
-    cb();
-  });
+gulp.task('test', function () {
+  test();
 });
 
 gulp.task('coveralls', ['test'], function () {
