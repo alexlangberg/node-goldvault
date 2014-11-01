@@ -23,7 +23,7 @@ var config = {
     }
   },
   directory: './migrations',
-  tableName: 'migrations'
+  tableName: 'knex_test_migrations'
 };
 var knex = Knex.initialize(config.database);
 

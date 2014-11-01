@@ -13,8 +13,7 @@ chai.use(require('chai-things'));
 chai.use(require('sinon-chai'));
 var sinon = require('sinon');
 var should = chai.should();
-var Goldvault = require('../index.js');
-var lout = require('lout');
+var Goldvault = require('../lib/goldvault.js');
 
 var config = {
   product: {
@@ -27,20 +26,50 @@ var config = {
     }
   },
   database: {
-    client: 'postgresql' || process.env.GOLDVAULT_DB_CLIENT,
+    client: 'sqlite3',
     connection: {
-      host: '127.0.0.1' || process.env.GOLDVAULT_DB_HOST,
-      user: '' || process.env.GOLDVAULT_DB_USERNAME,
-      password: '' || process.env.GOLDVAULT_DB_PASSWORD,
-      database: 'goldvault' || process.env.GOLDVAULT_DB_DATABASE,
-      //port: '27017' || process.env.GOLDVAULT_DB_PORT,
-    },
-    migrations: {
-      tableName: 'migrations'
+      filename: './dev.sqlite3'
     }
-  }
+  },
+  plugins: {}
 };
 
 describe('goldvault', function () {
+
+  it('can initialize packs', function (done) {
+    var vault = new Goldvault(config);
+    var fakePack = {foo: 'bar'};
+
+    vault.initPack(fakePack);
+
+    vault.initialized.should.be.true;
+    vault.pack.should.equal(fakePack);
+    vault.pack.should.have.property('goldvault');
+    vault.pack.goldvault.should.be.an('object');
+
+    done();
+  });
+
+  it('can be started, stopped and started again', function (done) {
+    var vault = new Goldvault(config);
+    var vaultStart = sinon.spy(vault, 'start');
+    var vaultStop = sinon.spy(vault, 'stop');
+
+    vault.start(function () {
+      var packStart = sinon.spy(vault.pack, 'start');
+      var packStop = sinon.spy(vault.pack, 'stop');
+
+      vault.stop(function() {
+        vault.start(function() {
+          vaultStart.should.have.callCount(2);
+          vaultStop.should.have.callCount(1);
+          packStart.should.have.callCount(1);
+          packStop.should.have.callCount(1);
+
+          done();
+        });
+      });
+    });
+  });
 
 });
