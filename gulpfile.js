@@ -1,23 +1,18 @@
 'use strict';
 
 var gulp = require('gulp');
+var lab = require('gulp-lab');
 var jshint = require('gulp-jshint');
-var istanbul = require('gulp-istanbul');
 var coveralls = require('gulp-coveralls');
-var mocha = require('gulp-spawn-mocha');
 var batch = require('gulp-batch');
 var betterConsole = require('better-console');
 var jsdoc = require('gulp-jsdoc');
 var jsPaths = ['*.js', 'lib/**/*.js', 'test/**/*.js', 'migrations/**/*.js'];
 
 var test = function (cb) {
-  return gulp.src(['lib/**/*.js'])
-    .pipe(istanbul())
-    .on('finish', function () {
-      gulp.src(['test/*.js'])
-        .pipe(mocha({reporter: 'spec', istanbul: true}))
+  return gulp.src(['test/*.js'])
+        .pipe(lab('-v -c'))
         .on('end', cb);
-    });
 };
 
 var lint = function () {

@@ -3,12 +3,17 @@
 /* exported should */
 /* jshint expr: true */
 /* jshint camelcase: false */
-//var _ = require('underscore');
+/* jshint -W079 */
+
+var Lab = require('lab');
+var lab = exports.lab = Lab.script();
+var describe = lab.describe;
+var it = lab.it;
+var before = lab.before;
+var after = lab.after;
 var chai = require('chai');
-chai.use(require('chai-things'));
-chai.use(require('sinon-chai'));
+    chai.use(require('chai-things'));
 var should = chai.should();
-var sinon = require('sinon');
 var Knex = require('knex');
 var config = {
   database: {
@@ -25,11 +30,13 @@ var knex = Knex.initialize(config.database);
 describe('knex migration', function () {
   before(function (done) {
     knex.migrate
-      .rollback(config);
-    done();
+      .rollback(config)
+      .then(function () {
+        done();
+      });
   });
 
-  afterEach(function (done) {
+  after(function (done) {
     knex.migrate
       .rollback(config)
       .then(function () {
