@@ -65,4 +65,13 @@ describe('goldvault', function () {
     app.knex.should.have.property('client');
     done();
   });
+
+  it('can have a knex connection injected', function (done) {
+    var knex = require('knex')(config.database);
+    var vault = new Goldvault(config, knex);
+    var app = vault.manifest.pack.app;
+    app.should.have.property('knex');
+    app.knex.should.have.property('client');
+    done();
+  });
 });
