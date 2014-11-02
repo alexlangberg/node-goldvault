@@ -3,14 +3,7 @@
 /* exported should */
 /* jshint expr: true */
 /* jshint camelcase: false */
-/* jshint -W079 */
 
-var Lab = require('lab');
-var lab = exports.lab = Lab.script();
-var describe = lab.describe;
-var it = lab.it;
-var before = lab.before;
-var after = lab.after;
 var chai = require('chai');
     chai.use(require('chai-things'));
 var should = chai.should();
