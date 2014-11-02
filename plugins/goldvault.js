@@ -7,13 +7,15 @@ exports.register = function (plugin, options, next) {
     handler: function (request, reply) {
       var uri = plugin.servers[0].info.uri;
       var docsFolder = plugin.app.config.product.docsFolder || '/docs';
+      var name = plugin.app.config.product.name || 'goldvault';
+      var info = plugin.app.config.product.info;
       var response = {
-        name: plugin.app.config.product.name,
+        name: name,
         docs: uri + docsFolder
       };
 
-      if (plugin.app.config.product.info) {
-        response.info = plugin.app.config.product.info;
+      if (info) {
+        response.info = info;
       }
 
       reply(response);
