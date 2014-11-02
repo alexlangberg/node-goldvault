@@ -20,20 +20,23 @@
     "better-console": "^0.2.3",
     "chai": "^1.9.2",
     "chai-things": "^0.2.0",
+    "coveralls": "^2.11.2",
     "gulp": "^3.8.9",
     "gulp-batch": "^1.0.1",
+    "gulp-coveralls": "^0.1.3",
+    "gulp-istanbul": "^0.3.1",
     "gulp-jsdoc": "^0.1.4",
     "gulp-jshint": "^1.8.6",
-    "gulp-lab": "^1.0.2",
+    "gulp-spawn-mocha": "^0.4.1",
+    "istanbul": "^0.3.2",
     "jshint-stylish": "^1.0.0",
-    "lab": "^5.0.1",
+    "mocha": "^1.21.5",
     "sinon": "^1.11.1",
     "sinon-chai": "^2.6.0",
     "sqlite3": "^3.0.2"
   },
   "dependencies": {
     "hapi": "^7.2.0",
-    "joi": "^4.7.0",
     "knex": "^0.7.3",
     "lout": "^5.1.1"
   }

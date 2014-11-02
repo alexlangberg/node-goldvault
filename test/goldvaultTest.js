@@ -2,12 +2,7 @@
 
 /* exported should */
 /* jshint expr: true */
-/* jshint -W079 */
 
-var Lab = require('lab');
-var lab = exports.lab = Lab.script();
-var describe = lab.describe;
-var it = lab.it;
 var chai = require('chai');
 chai.use(require('chai-things'));
 chai.use(require('sinon-chai'));
