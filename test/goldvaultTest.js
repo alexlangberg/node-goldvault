@@ -36,20 +36,6 @@ var config = {
 
 describe('goldvault', function () {
 
-  it('can initialize packs', function (done) {
-    var vault = new Goldvault(config);
-    var fakePack = {foo: 'bar'};
-
-    vault.initPack(fakePack);
-
-    vault.initialized.should.be.true;
-    vault.pack.should.equal(fakePack);
-    vault.pack.should.have.property('goldvault');
-    vault.pack.goldvault.should.be.an('object');
-
-    done();
-  });
-
   it('can be started, stopped and started again', function (done) {
     var vault = new Goldvault(config);
     var vaultStart = sinon.spy(vault, 'start');
