@@ -3,7 +3,6 @@
 var gulp = require('gulp');
 var lab = require('gulp-lab');
 var jshint = require('gulp-jshint');
-var coveralls = require('gulp-coveralls');
 var batch = require('gulp-batch');
 var betterConsole = require('better-console');
 var jsdoc = require('gulp-jsdoc');
@@ -26,7 +25,7 @@ var clear = function () {
 
 gulp.task('default', ['lint', 'test']);
 
-gulp.task('ci', ['lint', 'test', 'coveralls']);
+gulp.task('ci', ['lint', 'test']);
 
 gulp.task('watch', function () {
   gulp.watch(jsPaths, batch(function () {
@@ -42,10 +41,6 @@ gulp.task('lint', function () {
 
 gulp.task('test', function () {
   test();
-});
-
-gulp.task('coveralls', ['test'], function () {
-  return gulp.src('coverage/lcov.info').pipe(coveralls());
 });
 
 gulp.task('jsdoc', function () {

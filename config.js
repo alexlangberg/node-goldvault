@@ -2,7 +2,12 @@
 
 module.exports = {
   product: {
-    name: 'goldvault'
+    name: 'goldvault',
+    docsFolder: '/docs',
+    // optionally put some additional info here
+    info: {
+      contact: 'foo@bar.com'
+    }
   },
   server: {
     api: {
@@ -10,21 +15,26 @@ module.exports = {
       port: 8000
     }
   },
+  // Local database for testing
   database: {
-    client: 'postgresql' || process.env.GOLDVAULT_DB_CLIENT,
+    client: 'sqlite3',
     connection: {
-      host: '127.0.0.1' || process.env.GOLDVAULT_DB_HOST,
-      user: '' || process.env.GOLDVAULT_DB_USERNAME,
-      password: '' || process.env.GOLDVAULT_DB_PASSWORD,
-      database: 'goldvault' || process.env.GOLDVAULT_DB_DATABASE
-      //port: '27017' || process.env.GOLDVAULT_DB_PORT,
+      filename: './dev.sqlite3'
     }
   },
-  plugins: {}
-  //plugins: {
-  //  'node_modules/good'                 : config.plugins.good,
-  //  'node_modules/hapi-swagger'         : config.plugins['hapi-swagger']
-  //  'myapp/plugins/database'            : config.database,
-  //  'myapp/plugins/auth'                : config.plugins.auth,
-  //}
+  // Below for postgresql. Fill out or set to '' to use env vars instead
+  //database: {
+  //  client: 'postgresql' || process.env.GOLDVAULT_DB_CLIENT,
+  //  connection: {
+  //    host: '127.0.0.1' || process.env.GOLDVAULT_DB_HOST,
+  //    user: '' || process.env.GOLDVAULT_DB_USERNAME,
+  //    password: '' || process.env.GOLDVAULT_DB_PASSWORD,
+  //    database: 'goldvault' || process.env.GOLDVAULT_DB_DATABASE
+  //    port: '5432' || process.env.GOLDVAULT_DB_PORT,
+  //  }
+  //},
+  plugins: {
+    'node_modules/lout': {},
+    'plugins/goldvault.js': {}
+  }
 };
