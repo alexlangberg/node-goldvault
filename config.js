@@ -16,7 +16,7 @@ module.exports = {
       host: '127.0.0.1' || process.env.GOLDVAULT_DB_HOST,
       user: '' || process.env.GOLDVAULT_DB_USERNAME,
       password: '' || process.env.GOLDVAULT_DB_PASSWORD,
-      database: 'goldvault' || process.env.GOLDVAULT_DB_DATABASE,
+      database: 'goldvault' || process.env.GOLDVAULT_DB_DATABASE
       //port: '27017' || process.env.GOLDVAULT_DB_PORT,
     }
   },

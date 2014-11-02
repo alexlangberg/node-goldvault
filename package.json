@@ -20,15 +20,11 @@
     "better-console": "^0.2.3",
     "chai": "^1.9.2",
     "chai-things": "^0.2.0",
-    "coveralls": "^2.11.2",
     "gulp": "^3.8.9",
     "gulp-batch": "^1.0.1",
-    "gulp-coveralls": "^0.1.3",
-    "gulp-istanbul": "^0.3.1",
     "gulp-jsdoc": "^0.1.4",
     "gulp-jshint": "^1.8.6",
     "gulp-lab": "^1.0.2",
-    "istanbul": "^0.3.2",
     "jshint-stylish": "^1.0.0",
     "lab": "^5.0.1",
     "sinon": "^1.11.1",
@@ -37,9 +33,7 @@
   },
   "dependencies": {
     "hapi": "^7.2.0",
-    "joi": "^4.7.0",
     "knex": "^0.7.3",
-    "lodash": "^2.4.1",
     "lout": "^5.1.1"
   }
 }

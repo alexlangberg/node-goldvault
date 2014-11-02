@@ -58,4 +58,11 @@ describe('goldvault', function () {
     });
   });
 
+  it('connects with knex', function (done) {
+    var vault = new Goldvault(config);
+    var app = vault.manifest.pack.app;
+    app.should.have.property('knex');
+    app.knex.should.have.property('client');
+    done();
+  });
 });
