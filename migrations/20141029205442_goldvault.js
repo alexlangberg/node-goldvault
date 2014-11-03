@@ -5,7 +5,7 @@ exports.up = function (knex, Promise) {
     .createTable('source', function (table) {
       table.increments('id').unique().primary();
       table.text('name');
-      table.text('url');
+      table.text('url').unique();
     })
     .createTable('page', function (table) {
       table.increments('id').unique().primary();
