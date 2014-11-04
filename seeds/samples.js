@@ -39,27 +39,25 @@ exports.seed = function (knex, Promise) {
 };
 
 var insertWord = function (knex, wordObject, sentence_id) {
-  var insertSentenceWord = function (rows) {
-    return knex('sentence_word').insert({
-      sentence_id: sentence_id,
-      word_id: rows[0],
-      count: wordObject.count
+  return ensure(knex, 'word', {word: wordObject.word})
+    .then(function (rows) {
+      return knex('sentence_word').insert({
+        sentence_id: sentence_id,
+        word_id: rows[0],
+        count: wordObject.count
+      });
     });
-  };
+};
 
-  return knex('word').where({word: wordObject.word}).select('id')
+var ensure = function (knex, table, ensureObject, selectColumn) {
+  return knex(table).where(ensureObject).select(selectColumn)
     .then(function (rows) {
       if (rows.length === 0) {
-        return knex('word')
-          .insert({
-            word: wordObject.word
-          })
-          .then(function (rows) {
-            return insertSentenceWord(rows);
-          });
+        return knex(table)
+          .insert(ensureObject);
       }
       else {
-        return insertSentenceWord(rows);
+        return rows;
       }
     });
 };
