@@ -23,7 +23,7 @@ exports.up = function (knex, Promise) {
     })
     .createTable('word', function (table) {
       table.increments('id').unique().primary();
-      table.text('word');
+      table.text('word').unique();
     })
     .createTable('sentence_word', function (table) {
       table.integer('sentence_id').unsigned().references('sentence.id');

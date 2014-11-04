@@ -35,7 +35,6 @@ exports.seed = function (knex, Promise) {
       });
       return Promise.all(promises);
     });
-  //.then(Promise.resolve());
 };
 
 var insertWord = function (knex, wordObject, sentence_id) {
@@ -55,8 +54,7 @@ var ensure = function (knex, table, ensureObject, selectColumn) {
       if (rows.length === 0) {
         return knex(table)
           .insert(ensureObject);
-      }
-      else {
+      } else {
         return rows;
       }
     });

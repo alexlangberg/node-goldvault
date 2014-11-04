@@ -1,5 +1,4 @@
 'use strict';
-
 /* exported should */
 /* jshint expr: true */
 /* jshint camelcase: false */
