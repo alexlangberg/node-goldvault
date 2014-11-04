@@ -112,7 +112,8 @@ describe('knex migration', function () {
         return knex('sentence_word').insert(
           {
             sentence_id: 1,
-            word_id: 1
+            word_id: 1,
+            count: 1
           }
         );
       })

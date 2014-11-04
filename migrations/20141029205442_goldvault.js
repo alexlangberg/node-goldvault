@@ -28,6 +28,7 @@ exports.up = function (knex, Promise) {
     .createTable('sentence_word', function (table) {
       table.integer('sentence_id').unsigned().references('sentence.id');
       table.integer('word_id').unsigned().references('word.id');
+      table.integer('count').unsigned();
     })
     .then(Promise.resolve());
 };
