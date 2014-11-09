@@ -77,7 +77,7 @@ describe('knex migration', function () {
           {
             page_id: 1,
             sentence: 'Foo bar. New bar on the way.',
-            link: 'https://www.foo.com/bar.html',
+            href: 'https://www.foo.com/bar.html',
             tag: 'h1',
             position: 37
           }

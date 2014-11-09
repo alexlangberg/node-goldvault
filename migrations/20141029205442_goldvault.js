@@ -17,7 +17,7 @@ exports.up = function (knex, Promise) {
       table.increments('id').unique().primary();
       table.integer('page_id').unsigned().references('page.id');
       table.text('sentence');
-      table.text('link');
+      table.text('href');
       table.text('tag');
       table.integer('position');
     })
