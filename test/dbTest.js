@@ -162,20 +162,20 @@ describe('db', function () {
       });
   });
 
-  //it('can fail and stuff right', function (done) {
-  //  fakeCart.results[0].gold[0].position = 5;
-  //  knex.raw('DROP TABLE source')
-  //    .then(function() {
-  //      db.insertCart(fakeCart)
-  //        //.then(function (result) {
-  //        //  console.log(result);
-  //        //})
-  //        .catch(function (errors) {
-  //          console.log(errors);
-  //        })
-  //        .then(function() {
-  //          done();
-  //        });
-  //    });
-  //});
+  // find out how to get this working
+  it('can fail and stuff right', function (done) {
+    knex.raw('DROP TABLE source')
+      .then(function() {
+        db.insertCart(fakeCart)
+          .then(function (result) {
+            console.log(result);
+          })
+          .catch(function (errors) {
+            console.error(errors);
+          })
+          .then(function() {
+            done();
+          });
+      });
+  });
 });
