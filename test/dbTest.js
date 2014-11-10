@@ -39,7 +39,12 @@ describe('db', function () {
   });
 
   it('can ensure something that does not exist', function (done) {
-    db.ensure('source', {name: 'Foo', url: 'foo.com'})
+    db.ensure(
+      knex,
+      'source',
+      {url: 'foo.com'},
+      {name: 'Foo', url: 'foo.com'}
+    )
       .then(function (ids) {
         ids.should.be.an('array');
         ids[0].should.equal(1);
@@ -48,9 +53,19 @@ describe('db', function () {
   });
 
   it('can ensure something that does exist', function (done) {
-    db.ensure('source', {name: 'Foo', url: 'foo.com'})
+    db.ensure(
+      knex,
+      'source',
+      {url: 'foo.com'},
+      {name: 'Foo', url: 'foo.com'}
+    )
       .then(function () {
-        return db.ensure('source', {name: 'Foo', url: 'foo.com'})
+        return db.ensure(
+          knex,
+          'source',
+          {url: 'foo.com'},
+          {name: 'Foo', url: 'foo.com'}
+        )
           .then(function (ids) {
             ids[0].should.equal(1);
             done();
