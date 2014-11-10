@@ -20,9 +20,36 @@ var config = {
 var knex = Knex.initialize(config.database);
 var Db = require('../lib/db');
 var db = new Db(knex);
+var fakeCart;
 
 describe('db', function () {
   beforeEach(function (done) {
+    // reset fakeCart
+    fakeCart = {
+      started: 61000,
+      results: [{
+        map: {
+          name: 'Foo',
+          url: 'http://www.foo.com',
+          targets: 'h1'
+        },
+        dom: '<html><body><h1>Hello world!</h1></body></html>',
+        response: 200,
+        gold: [{
+          timestamp: 61000,
+          text: 'Hello world!',
+          keywords: [
+            {word: 'hello', count: 1},
+            {word: 'world', count: 1}
+          ],
+          href: 'http://www.foo.com/bar',
+          tag: 'h1',
+          position: 0
+        }]
+      }],
+      finished: 61000
+    };
+    // prepare database
     knex.migrate
       .latest(config)
       .then(function () {
@@ -31,6 +58,7 @@ describe('db', function () {
   });
 
   afterEach(function (done) {
+    // tear down database
     knex.migrate
       .rollback(config)
       .then(function () {
@@ -74,30 +102,6 @@ describe('db', function () {
   });
 
   it('it can insert a cart of results', function (done) {
-    var fakeCart = {
-      started: 61000,
-      results: [{
-        map: {
-          name: 'Foo',
-          url: 'http://www.foo.com',
-          targets: 'h1'
-        },
-        dom: '<html><body><h1>Hello world!</h1></body></html>',
-        response: 200,
-        gold: [{
-          timestamp: 61000,
-          text: 'Hello world!',
-          keywords: [
-            {word: 'hello', count: 1},
-            {word: 'world', count: 1}
-          ],
-          href: 'http://www.foo.com/bar',
-          tag: 'h1',
-          position: 0
-        }]
-      }],
-      finished: 61000
-    };
     db.insertCart(fakeCart)
       .then(function () {
         return knex('source').select()
@@ -157,4 +161,21 @@ describe('db', function () {
           });
       });
   });
+
+  //it('can fail and stuff right', function (done) {
+  //  fakeCart.results[0].gold[0].position = 5;
+  //  knex.raw('DROP TABLE source')
+  //    .then(function() {
+  //      db.insertCart(fakeCart)
+  //        //.then(function (result) {
+  //        //  console.log(result);
+  //        //})
+  //        .catch(function (errors) {
+  //          console.log(errors);
+  //        })
+  //        .then(function() {
+  //          done();
+  //        });
+  //    });
+  //});
 });
