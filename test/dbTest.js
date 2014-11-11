@@ -67,13 +67,13 @@ describe('db', function () {
       });
   });
 
-  it('test', function (done) {
+  it('can insert pages', function (done) {
     db.insertPage(fakeCart.results[0])
-      .then(function (whatever) {
-        console.log(whatever);
+      .then(function (first) {
+        first.id.should.equal(1);
         db.insertPage(fakeCart.results[0])
-          .then(function (united) {
-            console.log(united);
+          .then(function (second) {
+            second.id.should.equal(2);
             done();
           });
       });
