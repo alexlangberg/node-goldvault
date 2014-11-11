@@ -53,11 +53,11 @@ describe('goldvault', function () {
     });
   });
 
-  it('connects with knex', function (done) {
+  it('connects with bookshelf', function (done) {
     var vault = new Goldvault(config);
     var app = vault.manifest.pack.app;
-    app.should.have.property('knex');
-    app.knex.should.have.property('client');
+    app.should.have.property('bookshelf');
+    app.bookshelf.should.have.property('knex');
     done();
   });
 
@@ -65,8 +65,8 @@ describe('goldvault', function () {
     var knex = require('knex')(config.database);
     var vault = new Goldvault(config, knex);
     var app = vault.manifest.pack.app;
-    app.should.have.property('knex');
-    app.knex.should.have.property('client');
+    app.should.have.property('bookshelf');
+    app.bookshelf.should.have.property('knex');
     done();
   });
 });
