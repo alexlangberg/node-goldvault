@@ -70,9 +70,10 @@ describe('db', function () {
   it('test', function (done) {
     db.insertPage(fakeCart.results[0])
       .then(function (whatever) {
+        console.log(whatever);
         db.insertPage(fakeCart.results[0])
-          .then(function (result) {
-            console.log(result);
+          .then(function (united) {
+            console.log(united);
             done();
           });
       });
