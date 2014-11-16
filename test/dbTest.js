@@ -201,53 +201,53 @@ describe('db', function () {
 
   it('has working Source model relations', function (done) {
     db.insertCart(fakeCart)
-      .then(function() {
+      .then(function () {
         return db.models
           .Source
           .where({id: 1})
           .fetch({withRelated: ['pages']})
-          .then(function(item) {
+          .then(function (item) {
             item.related('pages').length.should.equal(1);
           });
       })
-      .then(function() {
+      .then(function () {
         done();
       });
   });
 
   it('has working Page model relations', function (done) {
     db.insertCart(fakeCart)
-      .then(function() {
+      .then(function () {
         return db.models
           .Page
           .where({id: 1})
           .fetch({withRelated: ['source']})
-          .then(function(item) {
+          .then(function (item) {
             item.related('source').id.should.equal(1);
           });
       })
-      .then(function() {
+      .then(function () {
         return db.models
           .Page
           .where({id: 1})
           .fetch({withRelated: ['sentences']})
-          .then(function(item) {
+          .then(function (item) {
             item.related('sentences').length.should.equal(1);
           });
       })
-      .then(function() {
+      .then(function () {
         done();
       });
   });
 
   it('has working Source model relations', function (done) {
     db.insertCart(fakeCart)
-      .then(function() {
+      .then(function () {
         return db.models
           .Sentence
           .where({id: 1})
           .fetch({withRelated: ['page']})
-          .then(function(item) {
+          .then(function (item) {
             item.related('page').id.should.equal(1);
           });
       })
@@ -256,52 +256,52 @@ describe('db', function () {
           .Sentence
           .where({id: 1})
           .fetch({withRelated: ['sentenceWords']})
-          .then(function(item) {
+          .then(function (item) {
             item.related('sentenceWords').length.should.equal(2);
           });
       })
-      .then(function() {
+      .then(function () {
         done();
       });
   });
 
   it('has working SentenceWord model relations', function (done) {
     db.insertCart(fakeCart)
-      .then(function() {
+      .then(function () {
         return db.models
           .SentenceWord
           .where({sentence_id: 1})
           .fetch({withRelated: ['sentence']})
-          .then(function(item) {
+          .then(function (item) {
             item.related('sentence').id.should.equal(1);
           });
       })
-      .then(function() {
+      .then(function () {
         return db.models
           .SentenceWord
           .where({sentence_id: 1})
           .fetch({withRelated: ['word']})
-          .then(function(item) {
+          .then(function (item) {
             item.related('word').id.should.equal(1);
           });
       })
-      .then(function() {
+      .then(function () {
         done();
       });
   });
 
   it('has working Word model relations', function (done) {
     db.insertCart(fakeCart)
-      .then(function() {
+      .then(function () {
         return db.models
           .Word
           .where({id: 1})
           .fetch({withRelated: ['sentenceWords']})
-          .then(function(item) {
+          .then(function (item) {
             item.related('sentenceWords').length.should.equal(2);
           });
       })
-      .then(function() {
+      .then(function () {
         done();
       });
   });
