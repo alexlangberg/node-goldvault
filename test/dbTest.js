@@ -28,26 +28,48 @@ describe('db', function () {
     // reset fakeCart
     fakeCart = {
       started: 61000,
-      results: [{
-        map: {
-          name: 'Foo',
-          url: 'http://www.foo.com',
-          targets: 'h1'
+      results: [
+        {
+          map: {
+            name: 'Foo',
+            url: 'http://www.foo.com',
+            targets: 'h1'
+          },
+          dom: '<html><body><h1>Hello world!</h1></body></html>',
+          response: 200,
+          gold: [{
+            timestamp: 61000,
+            text: 'Hello world!',
+            keywords: [
+              {word: 'hello', count: 1},
+              {word: 'world', count: 1}
+            ],
+            href: 'http://www.foo.com/bar',
+            tag: 'h1',
+            position: 0
+          }]
         },
-        dom: '<html><body><h1>Hello world!</h1></body></html>',
-        response: 200,
-        gold: [{
-          timestamp: 61000,
-          text: 'Hello world!',
-          keywords: [
-            {word: 'hello', count: 1},
-            {word: 'world', count: 1}
-          ],
-          href: 'http://www.foo.com/bar',
-          tag: 'h1',
-          position: 0
-        }]
-      }],
+        {
+          map: {
+            name: 'Bar',
+            url: 'http://www.bar.com',
+            targets: 'h1'
+          },
+          dom: '<html><body><h1>Hello world!</h1></body></html>',
+          response: 200,
+          gold: [{
+            timestamp: 61000,
+            text: 'Hello world!',
+            keywords: [
+              {word: 'hello', count: 1},
+              {word: 'world', count: 1}
+            ],
+            href: 'http://www.bar.com/foo',
+            tag: 'h1',
+            position: 0
+          }]
+        }
+      ],
       finished: 61000
     };
     // prepare database
@@ -68,127 +90,229 @@ describe('db', function () {
   });
 
   it('can insert pages', function (done) {
-    db.insertPage(fakeCart.results[0])
-      .then(function (first) {
-        first.id.should.equal(1);
-        db.insertPage(fakeCart.results[0])
-          .then(function (second) {
-            second.id.should.equal(2);
-            done();
+    db
+      .transaction(function (t) {
+        return db.insertPage(fakeCart.results[0], t)
+          .then(function (first) {
+            first.id.should.equal(1);
+            return db.insertPage(fakeCart.results[0], t)
+              .then(function (second) {
+                second.id.should.equal(2);
+              });
           });
+      })
+      .then(function () {
+        done();
       });
   });
 
-  //it('can ensure something that does not exist', function (done) {
-  //  db.ensure(
-  //    knex,
-  //    'source',
-  //    {url: 'foo.com'},
-  //    {name: 'Foo', url: 'foo.com'}
-  //  )
-  //    .then(function (ids) {
-  //      ids.should.be.an('array');
-  //      ids[0].should.equal(1);
-  //      done();
-  //    });
-  //});
-  //
-  //it('can ensure something that does exist', function (done) {
-  //  db.ensure(
-  //    knex,
-  //    'source',
-  //    {url: 'foo.com'},
-  //    {name: 'Foo', url: 'foo.com'}
-  //  )
-  //    .then(function () {
-  //      return db.ensure(
-  //        knex,
-  //        'source',
-  //        {url: 'foo.com'},
-  //        {name: 'Foo', url: 'foo.com'}
-  //      )
-  //        .then(function (ids) {
-  //          ids[0].should.equal(1);
-  //          done();
-  //        });
-  //    });
-  //});
-  //
-  //it('it can insert a cart of results', function (done) {
-  //  db.insertCart(fakeCart)
-  //    .then(function () {
-  //      return knex('source').select()
-  //        .then(function (items) {
-  //          items[0].id.should.equal(1);
-  //          items[0].name.should.equal(fakeCart.results[0].map.name);
-  //          items[0].url.should.equal(fakeCart.results[0].map.url);
-  //        })
-  //        .then(function () {
-  //          return knex('page').select()
-  //            .then(function (items) {
-  //              items[0].id.should.equal(1);
-  //              items[0].source_id.should.equal(1);
-  //              items[0].created_at.should.be.a('number');
-  //              items[0].count.should.equal(fakeCart.results[0].gold.length);
-  //            });
-  //        })
-  //        .then(function () {
-  //          return knex('sentence').select()
-  //            .then(function (items) {
-  //              items[0].id.should.equal(1);
-  //              items[0].page_id.should.equal(1);
-  //              items[0].sentence.should.equal(
-  //                fakeCart.results[0].gold[0].text
-  //              );
-  //              items[0].href.should.equal(fakeCart.results[0].gold[0].href);
-  //              items[0].tag.should.equal(fakeCart.results[0].gold[0].tag);
-  //              items[0].position.should.equal(
-  //                fakeCart.results[0].gold[0].position
-  //              );
-  //            });
-  //        })
-  //        .then(function () {
-  //          return knex('sentence_word').select()
-  //            .then(function (items) {
-  //              items.should.have.length(2);
-  //              items[0].sentence_id.should.equal(1);
-  //              items[1].sentence_id.should.equal(1);
-  //              items[0].count.should.equal(1);
-  //              items[1].count.should.equal(1);
-  //              items[0].word_id.should.equal(1);
-  //              items[1].word_id.should.equal(2);
-  //            });
-  //        })
-  //        .then(function () {
-  //          return knex('word').select()
-  //            .then(function (items) {
-  //              items.should.have.length(2);
-  //              items[0].id.should.equal(1);
-  //              items[1].id.should.equal(2);
-  //              items[0].word.should.equal('hello');
-  //              items[1].word.should.equal('world');
-  //            });
-  //        })
-  //        .then(function () {
-  //          done();
-  //        });
-  //    });
-  //});
-  //
-  //// find out how to get this working
-  //it('can fail and stuff right', function (done) {
-  //  knex.raw('DROP TABLE source')
-  //    .then(function() {
-  //      db.insertCart(fakeCart)
-  //        .then(function (result) {
-  //          console.log(result);
-  //        })
-  //        .catch(function (errors) {
-  //          console.error(errors);
-  //        })
-  //        .then(function() {
-  //          done();
-  //        });
-  //    });
-  //});
+  it('can insert sentences', function (done) {
+    db
+      .transaction(function (t) {
+        return db.insertPage(fakeCart.results[0], t)
+          .then(function (page) {
+            return db.insertSentence(fakeCart.results[0].gold[0], page.id, t)
+              .then(function (first) {
+                first.id.should.equal(1);
+                return db.insertSentence(
+                  fakeCart.results[0].gold[0],
+                  page.id,
+                  t)
+                  .then(function (second) {
+                    second.id.should.equal(2);
+                  });
+              });
+          });
+      })
+      .then(function () {
+        done();
+      });
+  });
+
+  it('can insert sentence words', function (done) {
+    db
+      .transaction(function (t) {
+        return db.insertPage(fakeCart.results[0], t)
+          .then(function (page) {
+            return db.insertSentence(fakeCart.results[0].gold[0], page.id, t)
+              .then(function (sentence) {
+                return db.insertSentenceWord(
+                  fakeCart.results[0].gold[0].keywords[0],
+                  sentence.id,
+                  t)
+                  .then(function (sentenceWord) {
+                    sentenceWord.attributes.sentence_id.should.equal(1);
+                    sentenceWord.attributes.word_id.should.equal(1);
+                    sentenceWord.attributes.count.should.equal(1);
+                  });
+              });
+          });
+      })
+      .then(function () {
+        done();
+      });
+  });
+
+  it('can insert cart items', function (done) {
+    db.insertCartItem(fakeCart.results[0])
+      .then(function () {
+        return db.models
+          .Source
+          .where({id: 1})
+          .fetch()
+          .then(function (source) {
+            source.attributes.id.should.equal(1);
+            source.attributes.name.should.equal(fakeCart.results[0].map.name);
+            source.attributes.url.should.equal(fakeCart.results[0].map.url);
+          });
+      })
+      .then(function () {
+        return db.models
+          .Page
+          .where({id: 1})
+          .fetch()
+          .then(function (page) {
+            page.attributes.id.should.equal(1);
+            page.attributes.source_id.should.equal(1);
+            page.attributes.count.should.equal(fakeCart.results[0].gold.length);
+            page.attributes.created_at.should.be.a('number');
+          });
+      })
+      .then(function () {
+        return db.models
+          .SentenceWord
+          .fetchAll()
+          .then(function (items) {
+            items.length.should.equal(2);
+          });
+      })
+      .then(function () {
+        return db.models
+          .Word
+          .fetchAll()
+          .then(function (items) {
+            items.length.should.equal(2);
+          });
+      })
+      .then(function () {
+        done();
+      });
+  });
+
+  it('has working Source model relations', function (done) {
+    db.insertCart(fakeCart)
+      .then(function() {
+        return db.models
+          .Source
+          .where({id: 1})
+          .fetch({withRelated: ['pages']})
+          .then(function(item) {
+            item.related('pages').length.should.equal(1);
+          });
+      })
+      .then(function() {
+        done();
+      });
+  });
+
+  it('has working Page model relations', function (done) {
+    db.insertCart(fakeCart)
+      .then(function() {
+        return db.models
+          .Page
+          .where({id: 1})
+          .fetch({withRelated: ['source']})
+          .then(function(item) {
+            item.related('source').id.should.equal(1);
+          });
+      })
+      .then(function() {
+        return db.models
+          .Page
+          .where({id: 1})
+          .fetch({withRelated: ['sentences']})
+          .then(function(item) {
+            item.related('sentences').length.should.equal(1);
+          });
+      })
+      .then(function() {
+        done();
+      });
+  });
+
+  it('has working Source model relations', function (done) {
+    db.insertCart(fakeCart)
+      .then(function() {
+        return db.models
+          .Sentence
+          .where({id: 1})
+          .fetch({withRelated: ['page']})
+          .then(function(item) {
+            item.related('page').id.should.equal(1);
+          });
+      })
+      .then(function () {
+        return db.models
+          .Sentence
+          .where({id: 1})
+          .fetch({withRelated: ['sentenceWords']})
+          .then(function(item) {
+            item.related('sentenceWords').length.should.equal(2);
+          });
+      })
+      .then(function() {
+        done();
+      });
+  });
+
+  it('has working SentenceWord model relations', function (done) {
+    db.insertCart(fakeCart)
+      .then(function() {
+        return db.models
+          .SentenceWord
+          .where({sentence_id: 1})
+          .fetch({withRelated: ['sentence']})
+          .then(function(item) {
+            item.related('sentence').id.should.equal(1);
+          });
+      })
+      .then(function() {
+        return db.models
+          .SentenceWord
+          .where({sentence_id: 1})
+          .fetch({withRelated: ['word']})
+          .then(function(item) {
+            item.related('word').id.should.equal(1);
+          });
+      })
+      .then(function() {
+        done();
+      });
+  });
+
+  it('has working Word model relations', function (done) {
+    db.insertCart(fakeCart)
+      .then(function() {
+        return db.models
+          .Word
+          .where({id: 1})
+          .fetch({withRelated: ['sentenceWords']})
+          .then(function(item) {
+            item.related('sentenceWords').length.should.equal(2);
+          });
+      })
+      .then(function() {
+        done();
+      });
+  });
+
+  it('can insert a cart', function (done) {
+    db.insertCart(fakeCart)
+      .then(function (result) {
+        //console.log(result);
+      })
+      .then(function () {
+        done();
+      });
+  });
 });

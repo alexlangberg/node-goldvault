@@ -36,11 +36,11 @@ describe('knex migration', function () {
       });
   });
 
-  it('can insert into the source table', function (done) {
+  it('can insert into the sources table', function (done) {
     knex.migrate
       .latest(config)
       .then(function () {
-        return knex('source').insert(
+        return knex('sources').insert(
           {
             name: 'Foo',
             url: 'https://www.foo.com'
@@ -52,11 +52,11 @@ describe('knex migration', function () {
       });
   });
 
-  it('can insert into the page table', function (done) {
+  it('can insert into the pages table', function (done) {
     knex.migrate
       .latest(config)
       .then(function () {
-        return knex('page').insert(
+        return knex('pages').insert(
           {
             source_id: 1,
             created_at: '123456789',
@@ -69,11 +69,11 @@ describe('knex migration', function () {
       });
   });
 
-  it('can insert into the sentence table', function (done) {
+  it('can insert into the sentences table', function (done) {
     knex.migrate
       .latest(config)
       .then(function () {
-        return knex('sentence').insert(
+        return knex('sentences').insert(
           {
             page_id: 1,
             sentence: 'Foo bar. New bar on the way.',
@@ -88,11 +88,11 @@ describe('knex migration', function () {
       });
   });
 
-  it('can insert into the word table', function (done) {
+  it('can insert into the words table', function (done) {
     knex.migrate
       .latest(config)
       .then(function () {
-        return knex('word').insert(
+        return knex('words').insert(
           {
             id: 1,
             word: 'foo'
@@ -104,11 +104,11 @@ describe('knex migration', function () {
       });
   });
 
-  it('can insert into the sentence_word table', function (done) {
+  it('can insert into the sentences_words table', function (done) {
     knex.migrate
       .latest(config)
       .then(function () {
-        return knex('sentence_word').insert(
+        return knex('sentences_words').insert(
           {
             sentence_id: 1,
             word_id: 1,

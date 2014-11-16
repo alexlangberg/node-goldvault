@@ -2,32 +2,32 @@
 
 exports.up = function (knex, Promise) {
   knex.schema
-    .createTable('source', function (table) {
+    .createTable('sources', function (table) {
       table.increments('id').unique().primary();
       table.text('name');
       table.text('url').unique();
     })
-    .createTable('page', function (table) {
+    .createTable('pages', function (table) {
       table.increments('id').unique().primary();
-      table.integer('source_id').unsigned().references('source.id');
+      table.integer('source_id').unsigned().references('sources.id');
       table.timestamp('created_at');
       table.integer('count');
     })
-    .createTable('sentence', function (table) {
+    .createTable('sentences', function (table) {
       table.increments('id').unique().primary();
-      table.integer('page_id').unsigned().references('page.id');
+      table.integer('page_id').unsigned().references('pages.id');
       table.text('sentence');
       table.text('href');
       table.text('tag');
       table.integer('position');
     })
-    .createTable('word', function (table) {
+    .createTable('words', function (table) {
       table.increments('id').unique().primary();
       table.text('word').unique();
     })
-    .createTable('sentence_word', function (table) {
-      table.integer('sentence_id').unsigned().references('sentence.id');
-      table.integer('word_id').unsigned().references('word.id');
+    .createTable('sentences_words', function (table) {
+      table.integer('sentence_id').unsigned().references('sentences.id');
+      table.integer('word_id').unsigned().references('words.id');
       table.integer('count').unsigned();
     })
     .then(Promise.resolve());
@@ -35,10 +35,10 @@ exports.up = function (knex, Promise) {
 
 exports.down = function (knex, Promise) {
   knex.schema
-    .dropTable('source')
-    .dropTable('page')
-    .dropTable('sentence')
-    .dropTable('word')
-    .dropTable('sentence_word')
+    .dropTable('sources')
+    .dropTable('pages')
+    .dropTable('sentences')
+    .dropTable('words')
+    .dropTable('sentences_words')
     .then(Promise.resolve());
 };
