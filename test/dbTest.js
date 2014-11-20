@@ -199,6 +199,16 @@ describe('db', function () {
       });
   });
 
+  it('can insert a cart', function (done) {
+    db.insertCart(fakeCart)
+      .then(function (result) {
+        result.length.should.equal(2);
+      })
+      .finally(function () {
+        done();
+      });
+  });
+
   it('has working Source model relations', function (done) {
     db.insertCart(fakeCart)
       .then(function () {
@@ -306,13 +316,39 @@ describe('db', function () {
       });
   });
 
-  it('can insert a cart', function (done) {
-    db.insertCart(fakeCart)
-      .then(function (result) {
-        //console.log(result);
-      })
+  it('can catch failed cart inserts', function (done) {
+    knex.migrate
+      .rollback(config)
       .then(function () {
-        done();
+        db.insertCart(fakeCart)
+          .catch(function (error) {
+            error.should.be.an('object');
+          })
+          .finally(function () {
+            done();
+          });
+      });
+  });
+
+  it('can receive an options object', function (done) {
+    db.options.saveFailedToDisk.should.be.false;
+    var db2 = new Db(bookshelf, {saveFailedToDisk: './failed'});
+    db2.options.saveFailedToDisk.should.equal('./failed');
+    done();
+  });
+
+  it('writes failed inserts to disk for retrying', function (done) {
+    var db2 = new Db(bookshelf, {saveFailedToDisk: './testfailed'});
+    knex.migrate
+      .rollback(config)
+      .then(function () {
+        db2.insertCart(fakeCart)
+          .catch(function (error) {
+            error.should.be.an('object');
+          })
+          .finally(function () {
+            done();
+          });
       });
   });
 });
