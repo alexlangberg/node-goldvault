@@ -37,15 +37,15 @@ describe('goldvault', function () {
     var vaultStop = sinon.spy(vault, 'stop');
 
     vault.start(function () {
-      var packStart = sinon.spy(vault.pack, 'start');
-      var packStop = sinon.spy(vault.pack, 'stop');
+      var serverStart = sinon.spy(vault.server, 'start');
+      var serverStop = sinon.spy(vault.server, 'stop');
 
       vault.stop(function() {
         vault.start(function() {
           vaultStart.should.have.callCount(2);
           vaultStop.should.have.callCount(1);
-          packStart.should.have.callCount(1);
-          packStop.should.have.callCount(1);
+          serverStart.should.have.callCount(1);
+          serverStop.should.have.callCount(1);
 
           done();
         });
@@ -55,7 +55,7 @@ describe('goldvault', function () {
 
   it('connects with bookshelf', function (done) {
     var vault = new Goldvault(config);
-    var app = vault.manifest.pack.app;
+    var app = vault.manifest.server.app;
     app.should.have.property('bookshelf');
     app.bookshelf.should.have.property('knex');
     done();
@@ -64,7 +64,7 @@ describe('goldvault', function () {
   it('can have a knex connection injected', function (done) {
     var knex = require('knex')(config.database);
     var vault = new Goldvault(config, knex);
-    var app = vault.manifest.pack.app;
+    var app = vault.manifest.server.app;
     app.should.have.property('bookshelf');
     app.bookshelf.should.have.property('knex');
     done();

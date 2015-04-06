@@ -1,0 +1,62 @@
+{
+  "started": 61000,
+  "results": [
+    {
+      "map": {
+        "name": "Foo",
+        "url": "http://www.foo.com",
+        "targets": "h1"
+      },
+      "dom": "<html><body><h1>Hello world!</h1></body></html>",
+      "response": 200,
+      "gold": [
+        {
+          "timestamp": 61000,
+          "text": "Hello world!",
+          "keywords": [
+            {
+              "word": "hello",
+              "count": 1
+            },
+            {
+              "word": "world",
+              "count": 1
+            }
+          ],
+          "href": "http://www.foo.com/bar",
+          "tag": "h1",
+          "position": 0
+        }
+      ]
+    },
+    {
+      "map": {
+        "name": "Bar",
+        "url": "http://www.bar.com",
+        "targets": "h1"
+      },
+      "dom": "<html><body><h1>Hello world!</h1></body></html>",
+      "response": 200,
+      "gold": [
+        {
+          "timestamp": 61000,
+          "text": "Hello world!",
+          "keywords": [
+            {
+              "word": "hello",
+              "count": 1
+            },
+            {
+              "word": "world",
+              "count": 1
+            }
+          ],
+          "href": "http://www.bar.com/foo",
+          "tag": "h1",
+          "position": 0
+        }
+      ]
+    }
+  ],
+  "finished": 61000
+}
