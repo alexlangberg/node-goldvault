@@ -7,6 +7,8 @@ var chai = require('chai');
 chai.use(require('chai-things'));
 var should = chai.should();
 var Knex = require('knex');
+var rimraf = require('rimraf');
+var fs = require('fs');
 var Db = require('../lib/db');
 var config = {
   database: {
@@ -338,16 +340,25 @@ describe('db', function () {
   });
 
   it('writes failed inserts to disk for retrying', function (done) {
-    var db2 = new Db(bookshelf, {saveFailedToDisk: './testfailed'});
+    var testDir = './testfailed';
+    var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
     knex.migrate
       .rollback(config)
       .then(function () {
         db2.insertCart(fakeCart)
           .catch(function (error) {
             error.should.be.an('object');
+            fs.readdir(testDir, function(err, files) {
+              fs.readFile(testDir + '/' + files[0], 'utf8', function(err, data) {
+                var savedCart = JSON.parse(data);
+                savedCart.should.deep.equal(fakeCart);
+              });
+            });
           })
           .finally(function () {
-            done();
+            rimraf(testDir, function(error) {
+              done();
+            });
           });
       });
   });

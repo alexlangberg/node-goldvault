@@ -29,9 +29,11 @@ describe('goldvault plugin', function () {
   });
 
   it('has a working route', function (done) {
-    server.app.config = {
-      product: {
-        info: {}
+    server.settings.app = {
+      config: {
+        product: {
+          info: {}
+        }
       }
     };
     server.inject({method: 'GET', url:'/'}, function(response) {
@@ -41,7 +43,7 @@ describe('goldvault plugin', function () {
   });
 
   it('has a working route even without info object', function (done) {
-    server.app.config = {
+    server.settings.app.config = {
       product: {}
     };
     server.inject({method: 'GET', url:'/'}, function(response) {
