@@ -5,6 +5,7 @@
 
 var chai = require('chai');
 chai.use(require('chai-things'));
+var sinon = require('sinon');
 var should = chai.should();
 var Knex = require('knex');
 var rimraf = require('rimraf');
@@ -24,6 +25,7 @@ var knex = Knex.initialize(config.database);
 var bookshelf = require('bookshelf')(knex);
 var db = new Db(bookshelf);
 var fakeCart;
+var testDir = './testfailed';
 
 describe('db', function () {
   beforeEach(function (done) {
@@ -340,7 +342,6 @@ describe('db', function () {
   });
 
   it('writes failed inserts to disk for retrying', function (done) {
-    var testDir = './testfailed';
     var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
     knex.migrate
       .rollback(config)
@@ -349,14 +350,85 @@ describe('db', function () {
           .catch(function (error) {
             error.should.be.an('object');
             fs.readdir(testDir, function(err, files) {
-              fs.readFile(testDir + '/' + files[0], 'utf8', function(err, data) {
+              fs.readFile(testDir + '/' + files[0],
+                'utf8',
+                function(err, data) {
                 var savedCart = JSON.parse(data);
                 savedCart.should.deep.equal(fakeCart);
               });
             });
           })
           .finally(function () {
-            rimraf(testDir, function(error) {
+            rimraf(testDir, function() {
+              done();
+            });
+          });
+      });
+  });
+
+  it('proceeds even if folder for failed already exists', function (done) {
+    var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
+    db2.fs.mkdir(testDir, function() {
+      knex.migrate
+        .rollback(config)
+        .then(function () {
+          db2.insertCart(fakeCart)
+            .catch(function (error) {
+              error.should.be.an('object');
+            })
+            .finally(function () {
+              rimraf(testDir, function() {
+                done();
+              });
+            });
+        });
+    });
+  });
+
+  it('rejects if folder creation fails', function (done) {
+    var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
+    // we don't want to throw an actual error in our test console
+    sinon.stub(console, 'error');
+    sinon.stub(db2.fs, 'mkdir', function(name, callback) {
+      callback({code: 'FOO'});
+    });
+    knex.migrate
+      .rollback(config)
+      .then(function () {
+        db2.insertCart(fakeCart)
+          .catch(function (error) {
+            error.should.be.an('object');
+          })
+          .finally(function () {
+            rimraf(testDir, function() {
+              db2.fs.mkdir.restore();
+              // restore console.error function to let errors work again
+              console.error.restore();
+              done();
+            });
+          });
+      });
+  });
+
+  it('rejects if file creation fails', function (done) {
+    var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
+    // we don't want to throw an actual error in our test console
+    sinon.stub(console, 'error');
+    sinon.stub(db2.fs, 'writeFile', function(name, data, callback) {
+      callback({code: 'FOO'});
+    });
+    knex.migrate
+      .rollback(config)
+      .then(function () {
+        db2.insertCart(fakeCart)
+          .catch(function (error) {
+            error.should.be.an('object');
+          })
+          .finally(function () {
+            rimraf(testDir, function() {
+              db2.fs.writeFile.restore();
+              // restore console.error function to let errors work again
+              console.error.restore();
               done();
             });
           });
