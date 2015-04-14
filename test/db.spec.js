@@ -5,8 +5,10 @@
 
 var chai = require('chai');
 chai.use(require('chai-things'));
-var sinon = require('sinon');
 var should = chai.should();
+var sinon = require('sinon');
+var BPromise = require('bluebird');
+require('sinon-as-promised')(BPromise);
 var Knex = require('knex');
 var rimraf = require('rimraf');
 var fs = require('fs');
@@ -434,4 +436,14 @@ describe('db', function () {
           });
       });
   });
+
+  //it('rejects if test folder creation fails w', function (done) {
+  //  var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
+  //  var error = new Error('Fake sinon stubbed error.');
+  //  error.code = 'EEXIST';
+  //  sinon.stub(db2.fs, 'mkdirAsync').rejects(error);
+  //  db.ensureFolder('foo');
+  //  db2.fs.mkdirAsync.restore();
+  //  done();
+  //});
 });
