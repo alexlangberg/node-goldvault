@@ -7,8 +7,6 @@ var chai = require('chai');
 chai.use(require('chai-things'));
 var should = chai.should();
 var sinon = require('sinon');
-var BPromise = require('bluebird');
-require('sinon-as-promised')(BPromise);
 var Knex = require('knex');
 var Db = require('../lib/db');
 var config = {

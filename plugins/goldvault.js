@@ -5,7 +5,6 @@ exports.register = function (server, options, next) {
     method: 'GET',
     path: '/',
     handler: function (request, reply) {
-      //console.log(server);
       var uri = server.connections[0].info.uri;
       var docsFolder = server.settings.app.config.product.docsFolder || '/docs';
       var name = server.settings.app.config.product.name || 'goldvault';
