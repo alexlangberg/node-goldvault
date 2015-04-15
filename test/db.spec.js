@@ -10,8 +10,6 @@ var sinon = require('sinon');
 var BPromise = require('bluebird');
 require('sinon-as-promised')(BPromise);
 var Knex = require('knex');
-var rimraf = require('rimraf');
-var fs = require('fs');
 var Db = require('../lib/db');
 var config = {
   database: {
@@ -351,48 +349,26 @@ describe('db', function () {
         db2.insertCart(fakeCart)
           .catch(function (error) {
             error.should.be.an('object');
-            fs.readdir(testDir, function(err, files) {
-              fs.readFile(testDir + '/' + files[0],
-                'utf8',
-                function(err, data) {
-                var savedCart = JSON.parse(data);
-                savedCart.should.deep.equal(fakeCart);
-              });
-            });
+            db2.fs.readJson(db2.failedDiskName(fakeCart),
+              function(error, json) {
+                json.should.deep.equal(fakeCart);
+              }
+            );
           })
           .finally(function () {
-            rimraf(testDir, function() {
+            db2.fs.remove(testDir, function() {
               done();
             });
           });
       });
   });
 
-  it('proceeds even if folder for failed already exists', function (done) {
-    var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
-    db2.fs.mkdir(testDir, function() {
-      knex.migrate
-        .rollback(config)
-        .then(function () {
-          db2.insertCart(fakeCart)
-            .catch(function (error) {
-              error.should.be.an('object');
-            })
-            .finally(function () {
-              rimraf(testDir, function() {
-                done();
-              });
-            });
-        });
-    });
-  });
-
-  it('rejects if folder creation fails', function (done) {
+  it('continues if folder creation fails', function (done) {
     var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
     // we don't want to throw an actual error in our test console
     sinon.stub(console, 'error');
-    sinon.stub(db2.fs, 'mkdir', function(name, callback) {
-      callback({code: 'FOO'});
+    sinon.stub(db2.fs, 'outputJson', function(name, content, callback) {
+      callback(new Error('Fake sinon error.'));
     });
     knex.migrate
       .rollback(config)
@@ -402,8 +378,8 @@ describe('db', function () {
             error.should.be.an('object');
           })
           .finally(function () {
-            rimraf(testDir, function() {
-              db2.fs.mkdir.restore();
+            db2.fs.remove(testDir, function() {
+              db2.fs.outputJson.restore();
               // restore console.error function to let errors work again
               console.error.restore();
               done();
@@ -411,39 +387,4 @@ describe('db', function () {
           });
       });
   });
-
-  it('rejects if file creation fails', function (done) {
-    var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
-    // we don't want to throw an actual error in our test console
-    sinon.stub(console, 'error');
-    sinon.stub(db2.fs, 'writeFile', function(name, data, callback) {
-      callback({code: 'FOO'});
-    });
-    knex.migrate
-      .rollback(config)
-      .then(function () {
-        db2.insertCart(fakeCart)
-          .catch(function (error) {
-            error.should.be.an('object');
-          })
-          .finally(function () {
-            rimraf(testDir, function() {
-              db2.fs.writeFile.restore();
-              // restore console.error function to let errors work again
-              console.error.restore();
-              done();
-            });
-          });
-      });
-  });
-
-  //it('rejects if test folder creation fails w', function (done) {
-  //  var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
-  //  var error = new Error('Fake sinon stubbed error.');
-  //  error.code = 'EEXIST';
-  //  sinon.stub(db2.fs, 'mkdirAsync').rejects(error);
-  //  db.ensureFolder('foo');
-  //  db2.fs.mkdirAsync.restore();
-  //  done();
-  //});
 });
