@@ -385,4 +385,15 @@ describe('db', function () {
           });
       });
   });
+
+  it('can retry inserting failed carts', function (done) {
+    var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
+    db2.saveCartToDisk(fakeCart).then(function () {
+      db2.retryFailed().then(function () {
+        db2.fs.remove(testDir, function() {
+          done();
+        });
+      });
+    });
+  });
 });
