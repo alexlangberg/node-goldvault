@@ -24,6 +24,7 @@ var bookshelf = require('bookshelf')(knex);
 var db = new Db(bookshelf);
 var fakeCart;
 var testDir = './testfailed';
+var R = require('ramda');
 
 describe('db', function () {
   beforeEach(function (done) {
@@ -386,12 +387,26 @@ describe('db', function () {
       });
   });
 
+  it('can read multiple json files from disk', function (done) {
+    var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
+    db2.saveCartToDisk(fakeCart).then(function() {
+      db2.loadJsonFiles((testDir)).then(function(files) {
+        files.should.be.an('array');
+        files[0].should.deep.equal(fakeCart);
+        done();
+      });
+    });
+  });
+
   it('can retry inserting failed carts', function (done) {
     var db2 = new Db(bookshelf, {saveFailedToDisk: testDir});
+    var fakeCart2 = R.merge(fakeCart, {started: 62000});
     db2.saveCartToDisk(fakeCart).then(function () {
-      db2.retryFailed().then(function () {
-        db2.fs.remove(testDir, function() {
-          done();
+      db2.saveCartToDisk(fakeCart2).then(function() {
+        db2.retryFailed().then(function () {
+          db2.fs.remove(testDir, function() {
+            done();
+          });
         });
       });
     });
