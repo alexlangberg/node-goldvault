@@ -157,7 +157,7 @@ describe('db', function () {
   });
 
   it('can insert cart items', function (done) {
-    db.insertCartItem(fakeCart.results[0])
+    db.insertCart(fakeCart)
       .then(function () {
         return db.models
           .Source
@@ -186,7 +186,7 @@ describe('db', function () {
           .SentenceWord
           .fetchAll()
           .then(function (items) {
-            items.length.should.equal(2);
+            items.length.should.equal(4);
           });
       })
       .then(function () {
