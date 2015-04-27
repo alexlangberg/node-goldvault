@@ -1,6 +1,6 @@
-// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 'use strict';
-/* exported should */
+
+// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 /* jshint expr: true */
 /* jshint camelcase: false */
 
@@ -8,6 +8,7 @@ var chai = require('chai');
 chai.use(require('chai-things'));
 var should = chai.should();
 var sinon = require('sinon');
+require('sinon-as-promised');
 var Knex = require('knex');
 var Db = require('../lib/db');
 var config = {
@@ -25,7 +26,6 @@ var bookshelf = require('bookshelf')(knex);
 var db = new Db(bookshelf);
 var fakeCart;
 var testDir = './goldvault';
-var R = require('ramda');
 var path = require('path');
 
 describe('db', function() {
@@ -108,6 +108,15 @@ describe('db', function() {
     db.ensureSources(fakeCart).then(function(results) {
       results.length.should.equal(2);
       done();
+    });
+  });
+
+  it('can ensure already existing sources', function(done) {
+    db.ensureSources(fakeCart).then(function() {
+      db.ensureSources(fakeCart).then(function(results) {
+        results.length.should.equal(2);
+        done();
+      });
     });
   });
 
@@ -202,8 +211,6 @@ describe('db', function() {
           .fetch()
           .then(function(source) {
             source.attributes.id.should.equal(1);
-            source.attributes.name.should.equal(fakeCart.results[0].map.name);
-            source.attributes.url.should.equal(fakeCart.results[0].map.url);
           });
       })
       .then(function() {
@@ -213,8 +220,6 @@ describe('db', function() {
           .fetch()
           .then(function(page) {
             page.attributes.id.should.equal(1);
-            page.attributes.source_id.should.equal(1);
-            page.attributes.count.should.equal(fakeCart.results[0].gold.length);
             page.attributes.created_at.should.be.a('number');
           });
       })
@@ -417,64 +422,26 @@ describe('db', function() {
       });
   });
 
+  it('rejects if initialization fails', function(done) {
+    var db2 = new Db(bookshelf, {saveToDisk: testDir});
+    sinon.stub(db2, 'saveCartToDisk').rejects('Fake sinon error.');
+    db2.initializeInsert(fakeCart)
+      .catch(function(error) {
+        error.should.be.an('object');
+        done();
+      });
+  });
 
+  it('warns if finalization cart file move fails', function(done) {
+    var db2 = new Db(bookshelf, {saveToDisk: testDir});
+    sinon.stub(db2, 'moveProcessedCart').rejects('Fake sinon error.');
+    db2.finalizeInsert(fakeCart)
+      .catch(function(error) {
+        error.should.be.an('object');
+        done();
+      });
+  });
 
-
-
-
-
-
-  //it('writes failed inserts to disk for retrying', function(done) {
-  //  var db2 = new Db(bookshelf, {saveToDisk: testDir});
-  //  knex.migrate
-  //    .rollback(config)
-  //    .then(function() {
-  //      db2.insertCart(fakeCart)
-  //        .catch(function(error) {
-  //          error.should.be.an('object');
-  //          db2.fs.readJson(db2.cartDiskName(fakeCart),
-  //            function(error, json) {
-  //              json.should.deep.equal(fakeCart);
-  //            });
-  //        })
-  //        .finally(function() {
-  //          db2.fs.remove(testDir, function() {
-  //            done();
-  //          });
-  //        });
-  //    });
-  //});
-  //
-  //it('continues if folder creation fails', function(done) {
-  //  var db2 = new Db(bookshelf, {saveToDisk: testDir});
-  //
-  //  // we don't want to throw an actual error in our test console
-  //  sinon.stub(console, 'error');
-  //  sinon.stub(db2.fs, 'outputJson', function(name, content, callback) {
-  //    callback(new Error('Fake sinon error.'));
-  //  });
-  //
-  //  knex.migrate
-  //    .rollback(config)
-  //    .then(function() {
-  //      db2.insertCart(fakeCart)
-  //        .catch(function(error) {
-  //          error.should.be.an('object');
-  //        })
-  //        .finally(function() {
-  //          db2.fs.remove(testDir, function() {
-  //            db2.fs.outputJson.restore();
-  //
-  //            // restore console.error function to let errors work again
-  //            console.error.restore();
-  //            done();
-  //          });
-  //        });
-  //    });
-  //});
-  //
-
-  //
   //it('can retry inserting failed carts', function(done) {
   //  var db2 = new Db(bookshelf, {saveToDisk: testDir});
   //  var fakeCart2 = R.merge(fakeCart, {started: 62000});
