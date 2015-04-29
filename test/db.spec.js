@@ -27,6 +27,7 @@ var db = new Db(bookshelf);
 var fakeCart;
 var testDir = './goldvault';
 var path = require('path');
+var R = require('ramda');
 
 describe('db', function() {
   beforeEach(function(done) {
@@ -131,20 +132,19 @@ describe('db', function() {
     db.ensureSources(fakeCart).then(function() {
       return db.ensureWords(fakeCart);
     }).then(function() {
-      db.bookshelf
-        .transaction(function(t) {
-          return db.insertPage(fakeCart.results[0], t)
-            .then(function(first) {
-              first.id.should.equal(1);
-              return db.insertPage(fakeCart.results[0], t)
-                .then(function(second) {
-                  second.id.should.equal(2);
-                });
-            });
-        })
-        .then(function() {
-          done();
-        });
+      db.bookshelf.transaction(function(t) {
+        return db.insertPage(fakeCart.results[0], t)
+          .then(function(first) {
+            first.id.should.equal(1);
+            return db.insertPage(fakeCart.results[0], t)
+              .then(function(second) {
+                second.id.should.equal(2);
+              });
+          });
+      })
+      .then(function() {
+        done();
+      });
     });
   });
 
@@ -152,26 +152,25 @@ describe('db', function() {
     db.ensureSources(fakeCart).then(function() {
       return db.ensureWords(fakeCart);
     }).then(function() {
-      db.bookshelf
-        .transaction(function(t) {
-          return db.insertPage(fakeCart.results[0], t)
-            .then(function(page) {
-              return db.insertSentence(fakeCart.results[0].gold[0], page.id, t)
-                .then(function(first) {
-                  first.id.should.equal(1);
-                  return db.insertSentence(
-                    fakeCart.results[0].gold[0],
-                    page.id,
-                    t)
-                    .then(function(second) {
-                      second.id.should.equal(2);
-                    });
-                });
-            });
-        })
-        .then(function() {
-          done();
-        });
+      db.bookshelf.transaction(function(t) {
+        return db.insertPage(fakeCart.results[0], t)
+          .then(function(page) {
+            return db.insertSentence(fakeCart.results[0].gold[0], page.id, t)
+              .then(function(first) {
+                first.id.should.equal(1);
+                return db.insertSentence(
+                  fakeCart.results[0].gold[0],
+                  page.id,
+                  t)
+                  .then(function(second) {
+                    second.id.should.equal(2);
+                  });
+              });
+          });
+      })
+      .then(function() {
+        done();
+      });
     });
   });
 
@@ -179,26 +178,25 @@ describe('db', function() {
     db.ensureSources(fakeCart).then(function() {
       return db.ensureWords(fakeCart);
     }).then(function() {
-      db.bookshelf
-        .transaction(function(t) {
-          return db.insertPage(fakeCart.results[0], t)
-            .then(function(page) {
-              return db.insertSentence(fakeCart.results[0].gold[0], page.id, t)
-                .then(function(sentence) {
-                  return db.insertSentenceWord(
-                    fakeCart.results[0].gold[0].keywords[0],
-                    sentence.id,
-                    t)
-                    .then(function(sentenceWord) {
-                      sentenceWord.attributes.sentence_id.should.equal(1);
-                      sentenceWord.attributes.count.should.equal(1);
-                    });
-                });
-            });
-        })
-        .then(function() {
-          done();
-        });
+      db.bookshelf.transaction(function(t) {
+        return db.insertPage(fakeCart.results[0], t)
+          .then(function(page) {
+            return db.insertSentence(fakeCart.results[0].gold[0], page.id, t)
+              .then(function(sentence) {
+                return db.insertSentenceWord(
+                  fakeCart.results[0].gold[0].keywords[0],
+                  sentence.id,
+                  t)
+                  .then(function(sentenceWord) {
+                    sentenceWord.attributes.sentence_id.should.equal(1);
+                    sentenceWord.attributes.count.should.equal(1);
+                  });
+              });
+          });
+      })
+      .then(function() {
+        done();
+      });
     });
   });
 
@@ -413,7 +411,7 @@ describe('db', function() {
       .then(function() {
         db2.insertCart(fakeCart)
           .catch(function() {
-            var failed = path.join(testDir, 'failed');
+            var failed = path.join(testDir, db2.options.folderFailed);
             db2.fs.readdirAsync(failed).then(function(files) {
               files[0].should.equal('61000-61000-2.json');
               done();
@@ -442,17 +440,37 @@ describe('db', function() {
       });
   });
 
-  //it('can retry inserting failed carts', function(done) {
-  //  var db2 = new Db(bookshelf, {saveToDisk: testDir});
-  //  var fakeCart2 = R.merge(fakeCart, {started: 62000});
-  //  db2.saveCartToDisk(fakeCart).then(function() {
-  //    db2.saveCartToDisk(fakeCart2).then(function() {
-  //      db2.retryFailed().then(function() {
-  //        db2.fs.remove(testDir, function() {
-  //          done();
-  //        });
-  //      });
-  //    });
-  //  });
-  //});
+  it('can retry inserting failed carts', function(done) {
+    var db2 = new Db(bookshelf, {saveToDisk: testDir});
+    var fakeCart2 = R.merge(fakeCart, {started: 62000});
+    db2.saveCartToDisk(fakeCart, db2.options.folderFailed).then(function() {
+      return db2.saveCartToDisk(fakeCart2, db2.options.folderFailed);
+    }).then(function() {
+      return db2.retryFailed();
+    }).then(function(inserted) {
+      inserted.length.should.equal(2);
+      return db2.fs.readdirAsync(path.join(testDir, db2.options.folderFailed));
+    }).then(function(failed) {
+      failed.length.should.equal(0);
+      return db2.fs.readdirAsync(
+        path.join(testDir, db2.options.folderCompleted)
+      );
+    }).then(function(completed) {
+      completed.length.should.equal(2);
+      return db.models
+        .Sentence
+        .where({id: 1})
+        .fetch({withRelated: ['page']});
+    }).then(function(sentence) {
+      sentence.attributes.sentence.should.equal('Hello world!');
+      db2.fs.remove(testDir, function() {
+        done();
+      });
+    });
+  });
+
+  it('can handle failing on retry', function(done) {
+
+    done();
+  });
 });
