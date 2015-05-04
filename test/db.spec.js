@@ -136,13 +136,11 @@ describe('db', function() {
         return db.insertPage(fakeCart.results[0], t)
           .then(function(first) {
             first.id.should.equal(1);
-            return db.insertPage(fakeCart.results[0], t)
-              .then(function(second) {
-                second.id.should.equal(2);
-              });
+            return db.insertPage(fakeCart.results[0], t);
+          }).then(function(second) {
+            second.id.should.equal(2);
           });
-      })
-      .then(function() {
+      }).then(function() {
         done();
       });
     });
@@ -161,14 +159,12 @@ describe('db', function() {
                 return db.insertSentence(
                   fakeCart.results[0].gold[0],
                   page.id,
-                  t)
-                  .then(function(second) {
-                    second.id.should.equal(2);
-                  });
+                  t);
+              }).then(function(second) {
+                second.id.should.equal(2);
               });
           });
-      })
-      .then(function() {
+      }).then(function() {
         done();
       });
     });
@@ -181,22 +177,19 @@ describe('db', function() {
       db.bookshelf.transaction(function(t) {
         return db.insertPage(fakeCart.results[0], t)
           .then(function(page) {
-            return db.insertSentence(fakeCart.results[0].gold[0], page.id, t)
-              .then(function(sentence) {
-                return db.insertSentenceWord(
-                  fakeCart.results[0].gold[0].keywords[0],
-                  sentence.id,
-                  t)
-                  .then(function(sentenceWord) {
-                    sentenceWord.attributes.sentence_id.should.equal(1);
-                    sentenceWord.attributes.count.should.equal(1);
-                  });
-              });
-          });
-      })
-      .then(function() {
-        done();
+          return db.insertSentence(fakeCart.results[0].gold[0], page.id, t);
+        }).then(function(sentence) {
+          return db.insertSentenceWord(
+            fakeCart.results[0].gold[0].keywords[0],
+            sentence.id,
+            t);
+        }).then(function(sentenceWord) {
+          sentenceWord.attributes.sentence_id.should.equal(1);
+          sentenceWord.attributes.count.should.equal(1);
+        });
       });
+    }).then(function() {
+      done();
     });
   });
 
@@ -361,13 +354,14 @@ describe('db', function() {
 
   it('can read multiple json files from disk', function(done) {
     var db2 = new Db(bookshelf, {saveToDisk: testDir});
-    db2.saveCartToDisk(fakeCart).then(function() {
-      db2.loadJsonFiles((testDir)).then(function(files) {
+    db2.saveCartToDisk(fakeCart)
+      .then(function() {
+        return db2.loadJsonFiles((testDir));
+      }).then(function(files) {
         files.should.be.an('array');
         files[0].should.deep.equal(fakeCart);
         done();
       });
-    });
   });
 
   it('can get cart disk file name', function(done) {
@@ -383,13 +377,12 @@ describe('db', function() {
     knex.migrate
       .rollback(config)
       .then(function() {
-        db.insertCart(fakeCart)
-          .catch(function(error) {
-            error.should.be.an('object');
-          })
-          .finally(function() {
-            done();
-          });
+        return db.insertCart(fakeCart);
+      }).catch(function(error) {
+        error.should.be.an('object');
+      })
+      .finally(function() {
+        done();
       });
   });
 
@@ -409,14 +402,13 @@ describe('db', function() {
     knex.migrate
       .rollback(config)
       .then(function() {
-        db2.insertCart(fakeCart)
-          .catch(function() {
-            var failed = path.join(testDir, db2.options.folderFailed);
-            db2.fs.readdirAsync(failed).then(function(files) {
-              files[0].should.equal('61000-61000-2.json');
-              done();
-            });
-          });
+        return db2.insertCart(fakeCart);
+      }).catch(function() {
+        var failed = path.join(testDir, db2.options.folderFailed);
+        db2.fs.readdirAsync(failed).then(function(files) {
+          files[0].should.equal('61000-61000-2.json');
+          done();
+        });
       });
   });
 
@@ -447,8 +439,13 @@ describe('db', function() {
       return db2.saveCartToDisk(fakeCart2, db2.options.folderFailed);
     }).then(function() {
       return db2.retryFailed();
-    }).then(function(inserted) {
-      inserted.length.should.equal(2);
+    }).then(function(inserts) {
+      inserts.length.should.equal(2);
+      R.forEach(function(insert) {
+        var resolved = insert.isResolved();
+        resolved.should.be.true;
+      }, inserts);
+
       return db2.fs.readdirAsync(path.join(testDir, db2.options.folderFailed));
     }).then(function(failed) {
       failed.length.should.equal(0);
@@ -470,7 +467,40 @@ describe('db', function() {
   });
 
   it('can handle failing on retry', function(done) {
+    var db2 = new Db(bookshelf, {saveToDisk: testDir});
+    var fakeCart2 = R.merge(fakeCart, {started: 62000});
+    sinon.stub(db2, 'insertSentenceWord').rejects('Fake sinon error.');
+    db2.saveCartToDisk(fakeCart, db2.options.folderFailed).then(function() {
+      return db2.saveCartToDisk(fakeCart2, db2.options.folderFailed);
+    }).then(function() {
+      return db2.retryFailed();
+    })
+    .then(function() {
+      return db2.retryFailed();
+    }).then(function(inserts) {
+      inserts.length.should.equal(2);
+      R.forEach(function(insert) {
+        var rejected = insert.isRejected();
+        rejected.should.be.true;
+      }, inserts);
 
-    done();
+      return db2.fs.readdirAsync(path.join(testDir, db2.options.folderFailed));
+    }).then(function(failed) {
+      failed.length.should.equal(2);
+      return db2.fs.readdirAsync(
+        path.join(testDir, db2.options.folderCompleted)
+      );
+    }).then(function(completed) {
+      completed.length.should.equal(0);
+      return db.models
+        .Sentence
+        .where({id: 1})
+        .fetch({withRelated: ['page']});
+    }).then(function(sentence) {
+      should.not.exist(sentence);
+      db2.fs.remove(testDir, function() {
+        done();
+      });
+    });
   });
 });
