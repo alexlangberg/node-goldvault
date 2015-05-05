@@ -13,6 +13,7 @@ exports.up = function(knex, Promise) {
     })
     .createTable('pages', function(table) {
       table.increments('id').unique().primary();
+      table.integer('cart_id').unsigned().references('carts.id');
       table.integer('source_id').unsigned().references('sources.id');
       table.timestamp('created_at');
       table.integer('count');

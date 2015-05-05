@@ -134,10 +134,10 @@ describe('db', function() {
       return db.ensureWords(fakeCart);
     }).then(function() {
       db.bookshelf.transaction(function(t) {
-        return db.insertPage(fakeCart.results[0], t)
+        return db.insertPage(1, fakeCart.results[0], t)
           .then(function(first) {
             first.id.should.equal(1);
-            return db.insertPage(fakeCart.results[0], t);
+            return db.insertPage(1, fakeCart.results[0], t);
           }).then(function(second) {
             second.id.should.equal(2);
           });
@@ -152,7 +152,7 @@ describe('db', function() {
       return db.ensureWords(fakeCart);
     }).then(function() {
       db.bookshelf.transaction(function(t) {
-        return db.insertPage(fakeCart.results[0], t)
+        return db.insertPage(1, fakeCart.results[0], t)
           .then(function(page) {
             return db.insertSentence(fakeCart.results[0].gold[0], page.id, t)
               .then(function(first) {
@@ -195,7 +195,7 @@ describe('db', function() {
   });
 
   it('can insert cart items', function(done) {
-    db.insertCart(fakeCart)
+    db.insert(fakeCart)
       .then(function() {
         return db.models
           .Source
@@ -237,7 +237,7 @@ describe('db', function() {
   });
 
   it('can insert a cart', function(done) {
-    db.insertCart(fakeCart)
+    db.insert(fakeCart)
       .then(function(result) {
         result.length.should.equal(2);
       })
@@ -246,8 +246,24 @@ describe('db', function() {
       });
   });
 
+  it('has working Cart model relations', function(done) {
+    db.insert(fakeCart)
+      .then(function() {
+        return db.models
+          .Cart
+          .where({id: 1})
+          .fetch({withRelated: ['pages']})
+          .then(function(item) {
+            item.related('pages').length.should.equal(2);
+          });
+      })
+      .then(function() {
+        done();
+      });
+  });
+
   it('has working Source model relations', function(done) {
-    db.insertCart(fakeCart)
+    db.insert(fakeCart)
       .then(function() {
         return db.models
           .Source
@@ -263,7 +279,7 @@ describe('db', function() {
   });
 
   it('has working Page model relations', function(done) {
-    db.insertCart(fakeCart)
+    db.insert(fakeCart)
       .then(function() {
         return db.models
           .Page
@@ -288,7 +304,7 @@ describe('db', function() {
   });
 
   it('has working Source model relations', function(done) {
-    db.insertCart(fakeCart)
+    db.insert(fakeCart)
       .then(function() {
         return db.models
           .Sentence
@@ -313,7 +329,7 @@ describe('db', function() {
   });
 
   it('has working SentenceWord model relations', function(done) {
-    db.insertCart(fakeCart)
+    db.insert(fakeCart)
       .then(function() {
         return db.models
           .SentenceWord
@@ -338,7 +354,7 @@ describe('db', function() {
   });
 
   it('has working Word model relations', function(done) {
-    db.insertCart(fakeCart)
+    db.insert(fakeCart)
       .then(function() {
         return db.models
           .Word
@@ -378,7 +394,7 @@ describe('db', function() {
     knex.migrate
       .rollback(config)
       .then(function() {
-        return db.insertCart(fakeCart);
+        return db.insert(fakeCart);
       }).catch(function(error) {
         error.should.be.an('object');
       })
@@ -389,7 +405,7 @@ describe('db', function() {
 
   it('can save completed carts to disk', function(done) {
     var db2 = new Db(bookshelf, {saveToDisk: testDir});
-    db2.insertCart(fakeCart).then(function() {
+    db2.insert(fakeCart).then(function() {
       var completedDir = path.join(testDir, 'completed');
       db2.fs.readdirAsync(completedDir).then(function(files) {
         files[0].should.equal('61000-61000-2.json');
@@ -403,7 +419,7 @@ describe('db', function() {
     knex.migrate
       .rollback(config)
       .then(function() {
-        return db2.insertCart(fakeCart);
+        return db2.insert(fakeCart);
       }).catch(function() {
         var failed = path.join(testDir, db2.options.folderFailed);
         db2.fs.readdirAsync(failed).then(function(files) {
