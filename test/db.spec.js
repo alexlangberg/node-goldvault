@@ -33,6 +33,7 @@ describe('db', function() {
   beforeEach(function(done) {
     // reset fakeCart
     fakeCart = {
+      uuid: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
       started: 61000,
       results: [
         {
